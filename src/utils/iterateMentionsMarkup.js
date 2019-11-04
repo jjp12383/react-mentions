@@ -38,9 +38,8 @@ const iterateMentionsMarkup = (
     const display = displayTransform(id, match[displayPos])
 
     let substr = value.substring(start, match.index)
-    textIteratee(substr, start, currentPlainTextIndex)
+    textIteratee(substr, start, currentPlainTextIndex, mentionChildIndex)
     currentPlainTextIndex += substr.length
-
     markupIteratee(
       match[0],
       match.index,

@@ -18,12 +18,15 @@ const mapPlainTextIndex = (
   }
 
   let result
-  let textIteratee = (substr, index, substrPlainTextIndex) => {
+  let textIteratee = (substr, index, substrPlainTextIndex, childIndex) => {
     if (result !== undefined) return
 
     if (substrPlainTextIndex + substr.length >= indexInPlainText) {
       // found the corresponding position in the current plain text range
-      result = index + indexInPlainText - substrPlainTextIndex
+      result = {
+        index: index + indexInPlainText - substrPlainTextIndex,
+        childIndex
+      }
     }
   }
   let markupIteratee = (
@@ -44,13 +47,15 @@ const mapPlainTextIndex = (
       if (inMarkupCorrection === 'NULL') {
         result = null
       } else {
-        result = index + (inMarkupCorrection === 'END' ? markup.length : 0)
+        result = {
+          index: index + (inMarkupCorrection === 'END' ? markup.length : 0),
+          childIndex,
+        }
       }
     }
   }
 
   iterateMentionsMarkup(value, config, markupIteratee, textIteratee)
-
   // when a mention is at the end of the value and we want to get the caret position
   // at the end of the string, result is undefined
   return result === undefined ? value.length : result

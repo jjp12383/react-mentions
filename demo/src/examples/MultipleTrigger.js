@@ -44,8 +44,8 @@ function MultipleTriggers({ value, data, onChange, onAdd }) {
 
         <Mention
           markup="@[__display__](email:__id__)"
-          trigger={emailRegex}
-          data={search => [{ id: search, display: search }]}
+          trigger="["
+          data={data}
           onAdd={onAdd}
           style={{ backgroundColor: '#d1c4e9' }}
         />

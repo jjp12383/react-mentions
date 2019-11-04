@@ -29,7 +29,7 @@ describe('#findStartOfMentionInPlainText', () => {
       config,
       plainText.indexOf('Doe')
     )
-    expect(result).toEqual(plainText.indexOf('John Doe'))
+    expect(result.start).toEqual(plainText.indexOf('John Doe'))
   })
 
   it('should return `undefined`, if it does not lie inside a mention', () => {
@@ -38,7 +38,7 @@ describe('#findStartOfMentionInPlainText', () => {
       config,
       plainText.indexOf('add')
     )
-    expect(result).toEqual(undefined)
+    expect(result.start).toEqual(undefined)
   })
 
   it("should return the index of the mention's first char if that one is the probe value", () => {
@@ -47,6 +47,6 @@ describe('#findStartOfMentionInPlainText', () => {
       config,
       plainText.indexOf('John')
     )
-    expect(result).toEqual(plainText.indexOf('John'))
+    expect(result.start).toEqual(plainText.indexOf('John'))
   })
 })

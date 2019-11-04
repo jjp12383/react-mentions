@@ -6,11 +6,9 @@ import countPlaceholders from './countPlaceholders'
 const readConfigFromChildren = children =>
   Children.toArray(children).map(
     ({ props: { markup, regex, displayTransform } }) => ({
-      markup,
-      regex: regex
-        ? coerceCapturingGroups(regex, markup)
-        : markupToRegex(markup),
-      displayTransform: displayTransform || ((id, display) => display || id),
+        markup,
+        regex: regex ? coerceCapturingGroups(regex, markup) : markupToRegex(markup),
+        displayTransform: displayTransform || ((id, display) => display || id),
     })
   )
 

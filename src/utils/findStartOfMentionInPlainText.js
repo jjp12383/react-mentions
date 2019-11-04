@@ -20,7 +20,11 @@ const findStartOfMentionInPlainText = (value, config, indexInPlainText) => {
       mentionPlainTextIndex <= indexInPlainText &&
       mentionPlainTextIndex + display.length > indexInPlainText
     ) {
-      result = mentionPlainTextIndex
+      result = {
+        start: mentionPlainTextIndex,
+        end: mentionPlainTextIndex + display.length,
+        display,
+      }
       foundMention = true
     }
   }
