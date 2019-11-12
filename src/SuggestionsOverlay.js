@@ -10,9 +10,15 @@ class SuggestionsOverlay extends Component {
   static propTypes = {
     suggestions: PropTypes.object.isRequired,
     focusIndex: PropTypes.number,
+    childFocusIndex: PropTypes.number,
     scrollFocusedIntoView: PropTypes.bool,
     isLoading: PropTypes.bool,
+    onMouseDown: PropTypes.func,
+    onChildMouseEnter: PropTypes.func,
+    onMouseEnter: PropTypes.func,
     onSelect: PropTypes.func,
+    onChildSelect: PropTypes.func,
+    openIndex: PropTypes.number,
     ignoreAccents: PropTypes.bool,
 
     children: PropTypes.oneOfType([
@@ -23,7 +29,13 @@ class SuggestionsOverlay extends Component {
 
   static defaultProps = {
     suggestions: {},
+    onMouseDown: () => null,
+    onMouseEnter: () => null,
+    onChildMouseEnter: () => null,
     onSelect: () => null,
+    onChildSelect: () => null,
+    openIndex: null,
+    childFocusIndex: null,
   }
 
   componentDidUpdate() {
@@ -75,40 +87,15 @@ class SuggestionsOverlay extends Component {
   }
 
   renderSuggestions() {
+    const self = this
     return Object.values(this.props.suggestions).reduce(
       (accResults, { results, queryInfo, isReplace }) => [
         ...accResults,
         ...results.map((result, index) =>
-          this.renderSuggestion(result, queryInfo, accResults.length + index, isReplace)
+          this.renderSuggestion(result, queryInfo, accResults.length + index, isReplace, self.selectChild)
         ),
       ],
       []
-    )
-  }
-
-  renderSuggestion(result, queryInfo, index, isReplace) {
-    const id = this.getID(result)
-    const isFocused = index === this.props.focusIndex
-    const { childIndex, query } = queryInfo
-    const { renderSuggestion } = Children.toArray(this.props.children)[
-      childIndex
-    ].props
-    const { ignoreAccents } = this.props
-
-    return (
-      <Suggestion
-        style={this.props.style('item')}
-        key={`${childIndex}-${id}`}
-        id={id}
-        query={query}
-        index={index}
-        ignoreAccents={ignoreAccents}
-        renderSuggestion={renderSuggestion}
-        suggestion={result}
-        focused={isFocused}
-        onClick={() => this.select(result, queryInfo, isReplace)}
-        onMouseEnter={() => this.handleMouseEnter(index)}
-      />
     )
   }
 
@@ -128,14 +115,49 @@ class SuggestionsOverlay extends Component {
     return <LoadingIndicator style={this.props.style('loadingIndicator')} />
   }
 
-  handleMouseEnter(index, ev) {
-    if (this.props.onMouseEnter) {
-      this.props.onMouseEnter(index)
-    }
+  handleMouseEnter = (index, ev) => {
+    this.props.onMouseEnter(index)
   }
 
-  select(suggestion, queryInfo, isReplace) {
+  select = (suggestion, queryInfo, isReplace) => {
     this.props.onSelect(suggestion, queryInfo, isReplace)
+  }
+
+  selectChild = () => {
+    this.props.onChildSelect()
+  }
+
+  renderSuggestion(result, queryInfo, index, isReplace, childSelect) {
+    const id = this.getID(result)
+    const isFocused = index === this.props.focusIndex
+    const isOpen = index === this.props.openIndex
+    const { childIndex, query } = queryInfo
+    const { renderSuggestion, renderSuggestionChildren } = Children.toArray(this.props.children)[
+      childIndex
+    ].props
+    const { childFocusIndex, onChildMouseEnter, ignoreAccents } = this.props
+
+    return (
+      <Suggestion
+        style={this.props.style('item')}
+        key={`${childIndex}-${id}`}
+        id={id}
+        query={query}
+        index={index}
+        ignoreAccents={ignoreAccents}
+        isReplace={isReplace}
+        renderSuggestion={renderSuggestion}
+        renderSuggestionChildren={renderSuggestionChildren}
+        suggestion={result}
+        focused={isFocused}
+        open={isOpen}
+        childFocusIndex={childFocusIndex}
+        childMouseEnter={onChildMouseEnter}
+        childSelect={childSelect}
+        onClick={() => this.select(result, queryInfo, isReplace)}
+        onMouseEnter={() => this.handleMouseEnter(index)}
+      />
+    )
   }
 }
 

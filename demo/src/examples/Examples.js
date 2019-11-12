@@ -49,13 +49,52 @@ const users = [
   }
 ]
 
+const nestedData = [
+  {
+    id: 'undefined',
+    display: 'undefined',
+    data: [
+      {
+        id: '1',
+        display: 'undefined 1'
+      },
+      {
+        id: '2',
+        display: 'undefined 2'
+      },
+      {
+        id: '3',
+        display: 'undefined 3'
+      }
+    ]
+  },
+  {
+    id: 'simple',
+    display: 'simple',
+    data: [
+      {
+        id: '4',
+        display: 'simple 1'
+      },
+      {
+        id: '5',
+        display: 'simple 2'
+      },
+      {
+        id: '6',
+        display: 'simple 3'
+      }
+    ]
+  }
+]
+
 export default function Examples() {
   return (
     <EnhancerProvider enhancer={Radium}>
       <div>
-        <MultipleTrigger data={users} />
-        <SingleLine data={users} />
-        <SingleLineIgnoringAccents data={users} />
+        {/*<MultipleTrigger data={nestedData} />*/}
+        <SingleLine data={nestedData} />
+        {/*<SingleLineIgnoringAccents data={users} />
         <Scrollable data={users} />
         <Advanced data={users} />
         <ExperimentalCutCopyPaste data={users} />
@@ -63,7 +102,7 @@ export default function Examples() {
         <AsyncGithubUserMentions data={users} />
         <Emojis data={users} />
         <SuggestionPortal data={users} />
-        <BottomGuard data={users} />
+        <BottomGuard data={users} />*/}
       </div>
     </EnhancerProvider>
   )

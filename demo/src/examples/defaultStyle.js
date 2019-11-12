@@ -59,11 +59,18 @@ export default {
     },
 
     item: {
-      padding: '5px 15px',
-      borderBottom: '1px solid rgba(0,0,0,0.15)',
-
+      width: '100%',
       '&focused': {
         backgroundColor: '#cee4e5',
+      },
+
+      display: {
+        borderBottom: '1px solid rgba(0,0,0,0.15)',
+      },
+      item: {
+        '&focused': {
+          backgroundColor: '#cee4e5',
+        },
       },
     },
   },

@@ -5,13 +5,17 @@ import omit from 'lodash/omit'
 import keys from 'lodash/keys'
 
 import { getSubstringIndex } from './utils'
+import SuggestionChildren from './SuggestionChildren'
 
 class Suggestion extends Component {
   static propTypes = {
+    childMouseEnter: PropTypes.func,
+    childSelect: PropTypes.func,
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     query: PropTypes.string.isRequired,
     index: PropTypes.number.isRequired,
     ignoreAccents: PropTypes.bool,
+    isReplace: PropTypes.any,
 
     suggestion: PropTypes.oneOfType([
       PropTypes.string,
@@ -22,16 +26,50 @@ class Suggestion extends Component {
       }),
     ]).isRequired,
     renderSuggestion: PropTypes.func,
+    renderSuggestionChildren: PropTypes.func,
 
     focused: PropTypes.bool,
+    open: PropTypes.bool,
+    childFocusIndex: PropTypes.number,
+  }
+
+  static defaultProps = {
+    childClicked: () => null,
+    childMouseEnter: () => null,
+    childSelect: () => null,
+    open: false,
   }
 
   render() {
     let rest = omit(this.props, 'style', keys(Suggestion.propTypes))
-
+    const {
+      childMouseEnter,
+      childSelect,
+      childFocusIndex,
+      index,
+      isReplace,
+      open,
+      suggestion,
+      query,
+      renderSuggestionChildren,
+      style,
+    } = this.props
     return (
-      <li {...rest} {...this.props.style}>
+      <li {...rest} {...style}>
         {this.renderContent()}
+        {open && (
+          <SuggestionChildren
+            isReplace={isReplace}
+            onMouseEnter={childMouseEnter}
+            onSelect={childSelect}
+            parentIndex={index}
+            childFocusIndex={childFocusIndex}
+            query={query}
+            renderSuggestionChildren={renderSuggestionChildren}
+            suggestion={suggestion}
+            style={style}
+          />
+          )}
       </li>
     )
   }
@@ -77,24 +115,24 @@ class Suggestion extends Component {
     let i = getSubstringIndex(display, query, ignoreAccents)
 
     if (i === -1) {
-      return <span {...style('display')}>{display}</span>
+      return <div {...style('display')}>{display}</div>
     }
 
     return (
-      <span {...style('display')}>
+      <div {...style('display')}>
         {display.substring(0, i)}
         <b {...style('highlight')}>{display.substring(i, i + query.length)}</b>
         {display.substring(i + query.length)}
-      </span>
+      </div>
     )
   }
 }
 
-const styled = defaultStyle(
-  {
+const styled = defaultStyle({
     cursor: 'pointer',
+    padding: 0,
   },
-  props => ({ '&focused': props.focused })
+  props => ({ '&focused': props.focused }),
 )
 
 export default styled(Suggestion)

@@ -1,6 +1,7 @@
 import mapPlainTextIndex from './mapPlainTextIndex'
 import getPlainText from './getPlainText'
 import spliceString from './spliceString'
+import isUndefined from 'lodash/isUndefined'
 
 // Applies a change from the plain text textarea to the underlying marked up value
 // guided by the textarea text selection ranges before and after the change
@@ -42,14 +43,14 @@ const applyChangeToValue = (
     }
 
     let mappedSpliceStart = mapPlainTextIndex(value, config, spliceStart, 'START')
-    mappedSpliceStart = mappedSpliceStart && mappedSpliceStart.index ? mappedSpliceStart.index : mappedSpliceStart
+    mappedSpliceStart = mappedSpliceStart && !isUndefined(mappedSpliceStart.index) ? mappedSpliceStart.index : mappedSpliceStart
     let mappedSpliceEnd = mapPlainTextIndex(value, config, spliceEnd, 'END')
-    mappedSpliceEnd = mappedSpliceEnd && mappedSpliceEnd.index ? mappedSpliceEnd.index : mappedSpliceEnd
+    mappedSpliceEnd = mappedSpliceEnd && !isUndefined(mappedSpliceEnd.index) ? mappedSpliceEnd.index : mappedSpliceEnd
 
     let controlSpliceStart = mapPlainTextIndex(value, config, spliceStart, 'NULL')
-    controlSpliceStart = controlSpliceStart && controlSpliceStart.index ? controlSpliceStart.index : controlSpliceStart
+    controlSpliceStart = controlSpliceStart && !isUndefined(controlSpliceStart.index) ? controlSpliceStart.index : controlSpliceStart
     let controlSpliceEnd = mapPlainTextIndex(value, config, spliceEnd, 'NULL')
-    controlSpliceEnd = controlSpliceEnd && controlSpliceEnd.index ? controlSpliceEnd.index : controlSpliceEnd
+    controlSpliceEnd = controlSpliceEnd && !isUndefined(controlSpliceEnd.index) ? controlSpliceEnd.index : controlSpliceEnd
 
     let willRemoveMention = controlSpliceStart === null || controlSpliceEnd === null
     let newValue = spliceString(value, mappedSpliceStart, mappedSpliceEnd, insert)
@@ -75,9 +76,9 @@ const applyChangeToValue = (
 
             // re-map the corrected indices
             mappedSpliceStart = mapPlainTextIndex(value, config, spliceStart, 'START')
-            mappedSpliceStart = mappedSpliceStart && mappedSpliceStart.index ? mappedSpliceStart.index : mappedSpliceStart
+            mappedSpliceStart = mappedSpliceStart && !isUndefined(mappedSpliceStart.index) ? mappedSpliceStart.index : mappedSpliceStart
             mappedSpliceEnd = mapPlainTextIndex(value, config, spliceEnd, 'END')
-            mappedSpliceEnd = mappedSpliceEnd && mappedSpliceEnd.index ? mappedSpliceEnd.index : mappedSpliceEnd
+            mappedSpliceEnd = mappedSpliceEnd && !isUndefined(mappedSpliceEnd.index) ? mappedSpliceEnd.index : mappedSpliceEnd
             newValue = spliceString(value, mappedSpliceStart, mappedSpliceEnd, insert)
         }
     }

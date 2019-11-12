@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { defaultStyle } from 'substyle'
 import isEqual from 'lodash/isEqual'
 import isNumber from 'lodash/isNumber'
+import isUndefined from 'lodash/isUndefined'
 
 import {
   iterateMentionsMarkup,
@@ -86,7 +87,7 @@ class Highlighter extends Component {
     if (selection.start === selection.end) {
       caretPositionInMarkup = mapPlainTextIndex(value, config, selection.start,'START')
     }
-    caretPositionInMarkup = caretPositionInMarkup && caretPositionInMarkup.index ? caretPositionInMarkup.index : caretPositionInMarkup
+    caretPositionInMarkup = caretPositionInMarkup && !isUndefined(caretPositionInMarkup.index) ? caretPositionInMarkup.index : caretPositionInMarkup
 
     const resultComponents = []
     const componentKeys = {}

@@ -12,13 +12,22 @@ function SingleLine({ value, data, onChange, onAdd }) {
       <h3>Single line input</h3>
 
       <MentionsInput
+        className="dialog"
         singleLine
+        highlightToTag
+
+        isAccordion
         value={value}
         onChange={onChange}
         style={defaultStyle}
         placeholder={"Mention people using '@'"}
       >
-        <Mention data={data} onAdd={onAdd} style={defaultMentionStyle} />
+        <Mention
+            trigger="["
+            displayTransform={(_, display) => `[${display}]`}
+            data={data}
+            onAdd={onAdd}
+            style={defaultMentionStyle} />
       </MentionsInput>
     </div>
   )

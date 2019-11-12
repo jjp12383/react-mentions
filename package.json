@@ -1,6 +1,6 @@
 {
-  "name": "react-mentions",
-  "version": "0.0.0-development",
+  "name": "@wolfpigeon/react-mentions",
+  "version": "0.0.4",
   "description": "React mentions input",
   "main": "dist/react-mentions.cjs.js",
   "module": "dist/react-mentions.esm.js",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/signavio/react-mentions.git"
+    "url": "https://github.com/jjp12383/react-mentions"
   },
   "keywords": [
     "react",
@@ -31,12 +31,12 @@
     "safari >= 10",
     "ie >= 11"
   ],
-  "author": "Jan-Felix Schwarz",
+  "author": "Justin Paresky",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/signavio/react-mentions/issues"
+    "url": "https://github.com/jjp12383/react-mentions/issues"
   },
-  "homepage": "https://github.com/signavio/react-mentions",
+  "homepage": "https://github.com/jjp12383/react-mentions",
   "devDependencies": {
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.5",

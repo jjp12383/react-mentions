@@ -33,7 +33,6 @@ const iterateMentionsMarkup = (
     const { markup, displayTransform } = config[mentionChildIndex]
     const idPos = offset + findPositionOfCapturingGroup(markup, 'id')
     const displayPos = offset + findPositionOfCapturingGroup(markup, 'display')
-
     const id = match[idPos]
     const display = displayTransform(id, match[displayPos])
 
@@ -47,7 +46,8 @@ const iterateMentionsMarkup = (
       id,
       display,
       mentionChildIndex,
-      start
+      start,
+      match[displayPos]
     )
     currentPlainTextIndex += display.length
     start = regex.lastIndex

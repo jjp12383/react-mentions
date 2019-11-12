@@ -14,7 +14,8 @@ const findStartOfMentionInPlainText = (value, config, indexInPlainText) => {
     id,
     display,
     childIndex,
-    lastMentionEndIndex
+    lastMentionEndIndex,
+    plainDisplay
   ) => {
     if (
       mentionPlainTextIndex <= indexInPlainText &&
@@ -24,6 +25,7 @@ const findStartOfMentionInPlainText = (value, config, indexInPlainText) => {
         start: mentionPlainTextIndex,
         end: mentionPlainTextIndex + display.length,
         display,
+        plainDisplay,
       }
       foundMention = true
     }

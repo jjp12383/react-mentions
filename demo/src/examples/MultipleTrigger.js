@@ -24,8 +24,9 @@ function MultipleTriggers({ value, data, onChange, onAdd }) {
         placeholder={"Mention people using '@'"}
       >
         <Mention
-          markup="@[__display__](user:__id__)"
-          trigger="@"
+          markup="@(__display__)(user:__id__)"
+          displayTransform={display => `[${display}]`}
+          trigger="["
           data={data}
           renderSuggestion={(
             suggestion,
@@ -43,7 +44,7 @@ function MultipleTriggers({ value, data, onChange, onAdd }) {
         />
 
         <Mention
-          markup="@[__display__](email:__id__)"
+          markup="@(__display__)(email:__id__)"
           trigger="["
           data={data}
           onAdd={onAdd}
@@ -55,7 +56,7 @@ function MultipleTriggers({ value, data, onChange, onAdd }) {
 }
 
 const asExample = provideExampleValue(
-  "Hi @[John Doe](user:johndoe), \n\nlet's add @[joe@smoe.com](email:joe@smoe.com) and @[John Doe](user:johndoe) to this conversation... "
+  "Hi @(John Doe)(user:johndoe)"
 )
 
 export default asExample(MultipleTriggers)
