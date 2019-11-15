@@ -13,9 +13,8 @@ function SingleLine({ value, data, onChange, onAdd }) {
 
       <MentionsInput
         className="dialog"
-        singleLine
         highlightToTag
-
+        preserveValue
         isAccordion
         value={value}
         onChange={onChange}
@@ -24,7 +23,7 @@ function SingleLine({ value, data, onChange, onAdd }) {
       >
         <Mention
             trigger="["
-            displayTransform={(_, display) => `[${display}]`}
+            displayTransform={(_, display) => display}
             data={data}
             onAdd={onAdd}
             style={defaultMentionStyle} />

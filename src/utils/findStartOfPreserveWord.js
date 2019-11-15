@@ -1,7 +1,6 @@
 const findStartOfPreserveWord = (caretPosition, trigger, value) => {
   const trimmedValue = value.slice(0, caretPosition)
-  const closestTriggerChar = trimmedValue.lastIndexOf(trigger)
-  return closestTriggerChar
+  return trimmedValue.lastIndexOf(trigger)
 }
 
 export default findStartOfPreserveWord

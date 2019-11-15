@@ -890,6 +890,9 @@ class MentionsInput extends React.Component {
 
   updateMentionsQueries = (plainTextValue, caretPosition, selectionEnd) => {
     // Invalidate previous queries. Async results for previous queries will be neglected.
+    const value = this.props.value || ''
+    const { children } = this.props
+    const config = readConfigFromChildren(children)
     this._queryId++
     this.suggestions = {}
     this.setState({
@@ -900,10 +903,21 @@ class MentionsInput extends React.Component {
       const txt = plainTextValue.slice(caretPosition, selectionEnd)
       if (txt.length) {
         const beginTextFragment = plainTextValue.slice(0, caretPosition)
-        const prevSpace = beginTextFragment.lastIndexOf(' ') > -1 ? beginTextFragment.lastIndexOf(' ') + 1 : caretPosition
+        let prevSpace = beginTextFragment.lastIndexOf(' ') > -1 ? beginTextFragment.lastIndexOf(' ') + 1 : caretPosition
+        if (plainTextValue.slice(0, prevSpace).indexOf(' ') < 0) {
+          prevSpace = 0
+        }
         const endTextFragment = plainTextValue.slice(selectionEnd, plainTextValue.length)
         const nextSpace = endTextFragment.indexOf(' ') > -1 ? endTextFragment.indexOf(' ') : endTextFragment.length
-        const newSelectionEnd = selectionEnd + nextSpace
+        let newSelectionEnd = selectionEnd + nextSpace
+        const mentionStart = findStartOfMentionInPlainText(value, config, prevSpace)
+        const mentionEnd = findStartOfMentionInPlainText(value, config, newSelectionEnd)
+        if (mentionStart && prevSpace > mentionStart.start) {
+          prevSpace = mentionStart.start
+        }
+        if (mentionEnd && newSelectionEnd < mentionEnd.end) {
+          newSelectionEnd = mentionEnd.end
+        }
         this.inputRef.setSelectionRange(prevSpace, newSelectionEnd)
         this.queryData(
           '',
@@ -915,10 +929,6 @@ class MentionsInput extends React.Component {
         return
       }
     }
-
-    const value = this.props.value || ''
-    const { children } = this.props
-    const config = readConfigFromChildren(children)
 
     let positionInValue = mapPlainTextIndex(value, config, caretPosition,'NULL')
     positionInValue = positionInValue && !isUndefined(positionInValue.index) ? positionInValue.index : positionInValue
@@ -1094,8 +1104,10 @@ class MentionsInput extends React.Component {
       end = querySequenceEnd
       word = this.props.preserveValue ? isReplace.plainDisplay : display
     } else if (word) {
-      start = wordStart
-      end = wordEnd
+      start = mapPlainTextIndex(value, config, wordStart, 'START')
+      start = start && !isUndefined(start.index) ? start.index : start
+      end = mapPlainTextIndex(value, config, wordEnd, 'END')
+      end = end && !isUndefined(end.index) ? end.index : end
     } else {
       start = mapPlainTextIndex(value, config, querySequenceStart, 'START')
       start = start && !isUndefined(start.index) ? start.index : start
@@ -1130,7 +1142,7 @@ class MentionsInput extends React.Component {
       end = isReplace.end
     } else if (word && word.length) {
       start = wordStart
-      end = wordEnd + wordStart
+      end = displayValue.length + wordStart
     } else {
       start = querySequenceStart
       end = querySequenceEnd

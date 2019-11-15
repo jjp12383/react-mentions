@@ -7,7 +7,7 @@ const styled = defaultStyle({
 })
 
 const Mention = styled(({ display, style }) => (
-  <strong {...style}>{display}</strong>
+  <strong {...style}><span />{display}</strong>
 ))
 
 Mention.propTypes = {
@@ -27,6 +27,7 @@ Mention.propTypes = {
   onRemove: PropTypes.func,
 
   renderSuggestion: PropTypes.func,
+  renderSuggestionChildren: PropTypes.func,
 
   trigger: PropTypes.oneOfType([
     PropTypes.string,
@@ -52,6 +53,7 @@ Mention.defaultProps = {
   onClick: () => null,
   onRemove: () => null,
   renderSuggestion: null,
+  renderSuggestionChildren: null,
   isLoading: false,
   appendSpaceOnAdd: false,
 }
