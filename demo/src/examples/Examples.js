@@ -88,7 +88,7 @@ const nestedData = [
   }
 ]
 
-export default function Examples() {
+const Examples = () => {
   return (
     <EnhancerProvider enhancer={Radium}>
       <div>
@@ -107,3 +107,5 @@ export default function Examples() {
     </EnhancerProvider>
   )
 }
+
+export default Examples

@@ -28,20 +28,19 @@ import omit from 'lodash/omit'
 import isUndefined from 'lodash/isUndefined'
 import values from 'lodash/values'
 
-export const makeTriggerRegex = function(trigger, options = {}) {
+export const makeTriggerRegex = function(trigger, options = {}, ignoreSpace) {
   if (trigger instanceof RegExp) {
     return trigger
   } else {
     const { allowSpaceInQuery } = options
     const escapedTriggerChar = escapeRegex(trigger)
+    const pattern = `${!ignoreSpace ? '(?:^|\\s)' : ''}(${escapedTriggerChar}([^${
+      allowSpaceInQuery ? '' : '\\s'
+    }${escapedTriggerChar}]*))$`
 
     // first capture group is the part to be replaced on completion
     // second capture group is for extracting the search query
-    return new RegExp(
-      `(?:^|\\s)(${escapedTriggerChar}([^${
-        allowSpaceInQuery ? '' : '\\s'
-      }${escapedTriggerChar}]*))$`
-    )
+    return new RegExp(pattern)
   }
 }
 
@@ -82,12 +81,14 @@ const propTypes = {
   EXPERIMENTAL_cutCopyPaste: PropTypes.bool,
   allowSuggestionsAboveCursor: PropTypes.bool,
   ignoreAccents: PropTypes.bool,
+  defaultLang: PropTypes.string,
 
   value: PropTypes.string,
   onKeyDown: PropTypes.func,
   onSelect: PropTypes.func,
   onBlur: PropTypes.func,
   onChange: PropTypes.func,
+  readOnly: PropTypes.bool,
   suggestionsPortalHost:
     typeof Element === 'undefined'
       ? PropTypes.any
@@ -122,6 +123,8 @@ class MentionsInput extends React.Component {
     onKeyDown: () => null,
     onSelect: () => null,
     onBlur: () => null,
+    readOnly: false,
+    defaultLang: 'en_US'
   }
 
   constructor(props) {
@@ -138,7 +141,7 @@ class MentionsInput extends React.Component {
       openIndex: null,
       selectionStart: null,
       selectionEnd: null,
-
+      language: 'en-US',
       suggestions: {},
 
       caretPosition: null,
@@ -235,11 +238,11 @@ class MentionsInput extends React.Component {
   }
 
   renderInput = props => {
-    return <input type="text" ref={this.setInputRef} {...props} />
+    return <input disabled={this.props.readOnly} type="text" ref={this.setInputRef} {...props} />
   }
 
   renderTextarea = props => {
-    return <textarea ref={this.setInputRef} {...props} />
+    return <textarea disabled={this.props.readOnly} ref={this.setInputRef} {...props} />
   }
 
   setInputRef = el => {
@@ -487,9 +490,21 @@ class MentionsInput extends React.Component {
     }
 
     const value = this.props.value || ''
-    const config = readConfigFromChildren(this.props.children)
-
     let newPlainTextValue = ev.target.value
+
+    const REGEX_JAPANESE = /[\u3000-\u303f]|[\u3040-\u309f]|[\u30a0-\u30ff]|[\uff00-\uff9f]|[\u4e00-\u9faf]|[\u3400-\u4dbf]/
+    const hasJapanese = (str) => REGEX_JAPANESE.test(str)
+    if (hasJapanese(newPlainTextValue)) {
+      this.setState({
+        language: 'ja'
+      })
+    } else {
+      this.setState({
+        language: this.props.defaultLang
+      })
+    }
+
+    const config = readConfigFromChildren(this.props.children)
 
     // Derive the new value to set by applying the local change in the textarea's plain text
     let newValue = applyChangeToValue(
@@ -606,7 +621,6 @@ class MentionsInput extends React.Component {
       }
       case KEY.RETURN: {
         if (this.props.isAccordion && this.state.openIndex === null) {
-          this.props.onKeyDown(ev, this.state.focusIndex)
           this.openFocused(this.state.focusIndex)
           return
         }
@@ -893,6 +907,18 @@ class MentionsInput extends React.Component {
     const value = this.props.value || ''
     const { children } = this.props
     const config = readConfigFromChildren(children)
+    let spaceCharacter
+    switch(this.state.language) {
+      case 'ja':
+        spaceCharacter = '　'
+        break;
+      case 'en_US':
+        spaceCharacter = ' '
+        break
+      default:
+        spaceCharacter = ' '
+        break
+    }
     this._queryId++
     this.suggestions = {}
     this.setState({
@@ -903,20 +929,24 @@ class MentionsInput extends React.Component {
       const txt = plainTextValue.slice(caretPosition, selectionEnd)
       if (txt.length) {
         const beginTextFragment = plainTextValue.slice(0, caretPosition)
-        let prevSpace = beginTextFragment.lastIndexOf(' ') > -1 ? beginTextFragment.lastIndexOf(' ') + 1 : caretPosition
-        if (plainTextValue.slice(0, prevSpace).indexOf(' ') < 0) {
-          prevSpace = 0
-        }
-        const endTextFragment = plainTextValue.slice(selectionEnd, plainTextValue.length)
-        const nextSpace = endTextFragment.indexOf(' ') > -1 ? endTextFragment.indexOf(' ') : endTextFragment.length
-        let newSelectionEnd = selectionEnd + nextSpace
-        const mentionStart = findStartOfMentionInPlainText(value, config, prevSpace)
-        const mentionEnd = findStartOfMentionInPlainText(value, config, newSelectionEnd)
-        if (mentionStart && prevSpace > mentionStart.start) {
-          prevSpace = mentionStart.start
-        }
-        if (mentionEnd && newSelectionEnd < mentionEnd.end) {
-          newSelectionEnd = mentionEnd.end
+        let prevSpace = caretPosition
+        let newSelectionEnd = selectionEnd
+        if (this.state.language !== 'ja') {
+          prevSpace = beginTextFragment.lastIndexOf(spaceCharacter) > -1 ? beginTextFragment.lastIndexOf(spaceCharacter) + 1 : caretPosition
+          if (plainTextValue.slice(0, prevSpace).indexOf(spaceCharacter) < 0) {
+            prevSpace = 0
+          }
+          const endTextFragment = plainTextValue.slice(selectionEnd, plainTextValue.length)
+          const nextSpace = endTextFragment.indexOf(spaceCharacter) > -1 ? endTextFragment.indexOf(spaceCharacter) : endTextFragment.length
+          newSelectionEnd = selectionEnd + nextSpace
+          const mentionStart = findStartOfMentionInPlainText(value, config, prevSpace)
+          const mentionEnd = findStartOfMentionInPlainText(value, config, newSelectionEnd)
+          if (mentionStart && prevSpace > mentionStart.start) {
+            prevSpace = mentionStart.start
+          }
+          if (mentionEnd && newSelectionEnd < mentionEnd.end) {
+            newSelectionEnd = mentionEnd.end
+          }
         }
         this.inputRef.setSelectionRange(prevSpace, newSelectionEnd)
         this.queryData(
@@ -955,7 +985,7 @@ class MentionsInput extends React.Component {
         return
       }
 
-      const regex = makeTriggerRegex(child.props.trigger, this.props)
+      const regex = makeTriggerRegex(child.props.trigger, this.props, this.state.language === 'ja')
       const match = substring.match(regex)
       if (match) {
         const querySequenceStart = substringStartIndex + substring.indexOf(match[1], match.index)
@@ -1070,6 +1100,18 @@ class MentionsInput extends React.Component {
     const value = this.props.value || ''
     const config = readConfigFromChildren(this.props.children)
     const mentionsChild = Children.toArray(this.props.children)[childIndex]
+    let spaceCharacter
+    switch(this.state.language) {
+      case 'ja':
+        spaceCharacter = '　'
+        break;
+      case 'en_US':
+        spaceCharacter = ' '
+        break
+      default:
+        spaceCharacter = ' '
+        break
+    }
     let word
     const {
       markup,
@@ -1086,8 +1128,10 @@ class MentionsInput extends React.Component {
     if (this.state.selectionStart === this.state.selectionEnd && this.props.preserveValue && !isReplace) {
       wordStart = findStartOfPreserveWord(this.state.selectionStart, trigger, plainTextValue)
       word = plainTextValue.slice(wordStart + trigger.length, plainTextValue.length)
-      wordEnd = word.indexOf(' ')
-      if (wordEnd < 0) {
+      wordEnd = word.indexOf(spaceCharacter)
+      if (this.state.language === 'ja') {
+        wordEnd = wordStart + trigger.length + 1
+      } else if (wordEnd < 0) {
         wordEnd = plainTextValue.length
       } else {
         wordEnd = wordStart + trigger.length + wordEnd
@@ -1115,7 +1159,7 @@ class MentionsInput extends React.Component {
     }
     let insert = makeMentionsMarkup(markup, id, word || display)
     if (appendSpaceOnAdd) {
-      insert += ' '
+      insert += spaceCharacter
     }
     const newValue = spliceString(value, start, end, insert)
 
@@ -1124,7 +1168,7 @@ class MentionsInput extends React.Component {
 
     let displayValue = displayTransform(id, word || display)
     if (appendSpaceOnAdd) {
-      displayValue += ' '
+      displayValue += spaceCharacter
     }
 
     const newCaretPosition = isReplace ? isReplace.start + displayValue.length : querySequenceStart + displayValue.length
