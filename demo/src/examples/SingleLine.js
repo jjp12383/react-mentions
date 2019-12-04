@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 import { Mention, MentionsInput } from '../../../src'
 
@@ -25,6 +25,7 @@ function SingleLine(props) {
         <Mention
           trigger="["
           displayTransform={(_, display) => display}
+          markup='[__display__|__id__]'
           data={data}
           onAdd={onAdd}
           style={defaultMentionStyle} />

@@ -134,6 +134,12 @@ class MentionsInput extends React.Component {
     this.handleCopy = this.handleCopy.bind(this)
     this.handleCut = this.handleCut.bind(this)
     this.handlePaste = this.handlePaste.bind(this)
+    const REGEX_JAPANESE = /[\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|\u203B/g
+    const hasJapanese = (str) => REGEX_JAPANESE.test(str)
+    let lang = 'en-US'
+    if (hasJapanese(props.value)) {
+      lang = 'ja'
+    }
 
     this.state = {
       focusIndex: 0,
@@ -141,16 +147,24 @@ class MentionsInput extends React.Component {
       openIndex: null,
       selectionStart: null,
       selectionEnd: null,
-      language: 'en-US',
+      language: lang,
       suggestions: {},
-
       caretPosition: null,
       suggestionsPosition: null,
     }
   }
 
   componentDidMount() {
-    const { EXPERIMENTAL_cutCopyPaste } = this.props
+    const { children, EXPERIMENTAL_cutCopyPaste, value } = this.props
+    const config = readConfigFromChildren(children)
+    const newPlainTextValue = getPlainText(value, config)
+    const eventMock = { target: { value: value } }
+    this.executeOnChange(
+      eventMock,
+      value,
+      newPlainTextValue,
+      getMentions(value, config)
+    )
 
     if (EXPERIMENTAL_cutCopyPaste) {
       document.addEventListener('copy', this.handleCopy)
@@ -492,15 +506,11 @@ class MentionsInput extends React.Component {
     const value = this.props.value || ''
     let newPlainTextValue = ev.target.value
 
-    const REGEX_JAPANESE = /[\u3000-\u303f]|[\u3040-\u309f]|[\u30a0-\u30ff]|[\uff00-\uff9f]|[\u4e00-\u9faf]|[\u3400-\u4dbf]/
+    const REGEX_JAPANESE = /[\u3000-\u303F]|[\u3040-\u309F]|[\u30A0-\u30FF]|[\uFF00-\uFFEF]|[\u4E00-\u9FAF]|[\u2605-\u2606]|[\u2190-\u2195]|\u203B/g
     const hasJapanese = (str) => REGEX_JAPANESE.test(str)
     if (hasJapanese(newPlainTextValue)) {
       this.setState({
         language: 'ja'
-      })
-    } else {
-      this.setState({
-        language: this.props.defaultLang
       })
     }
 
