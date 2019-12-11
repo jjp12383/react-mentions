@@ -119,8 +119,8 @@ class SuggestionsOverlay extends Component {
     this.props.onMouseEnter(index)
   }
 
-  select = (suggestion, queryInfo, isReplace) => {
-    this.props.onSelect(suggestion, queryInfo, isReplace)
+  select = (suggestion, queryInfo, isReplace, index) => {
+    this.props.onSelect(suggestion, queryInfo, isReplace, index)
   }
 
   selectChild = () => {
@@ -154,7 +154,7 @@ class SuggestionsOverlay extends Component {
         childFocusIndex={childFocusIndex}
         childMouseEnter={onChildMouseEnter}
         childSelect={childSelect}
-        onClick={() => this.select(result, queryInfo, isReplace)}
+        onClick={() => this.select(result, queryInfo, isReplace, index)}
         onMouseEnter={() => this.handleMouseEnter(index)}
       />
     )
