@@ -299,6 +299,7 @@ class MentionsInput extends React.Component {
         focusIndex={this.state.focusIndex}
         childFocusIndex={this.state.childFocusIndex}
         openIndex={this.state.openIndex}
+        renderSuggestionOverlay={this.props.renderSuggestionOverlay}
         scrollFocusedIntoView={this.state.scrollFocusedIntoView}
         ref={el => {
           this.suggestionsRef = el
@@ -599,7 +600,7 @@ class MentionsInput extends React.Component {
     const suggestionsCount = countSuggestions(this.state.suggestions)
 
     const suggestionsComp = this.suggestionsRef
-    if (suggestionsCount === 0 || !suggestionsComp) {
+    if (suggestionsCount === 0 || !suggestionsComp || this.props.renderSuggestionOverlay) {
       this.props.onKeyDown(ev)
       return
     }

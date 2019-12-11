@@ -8,6 +8,13 @@ import defaultMentionStyle from './defaultMentionStyle'
 
 function SingleLine(props) {
   const { value, data, onChange, onAdd } = props
+
+  const renderSuggestionOverlay = (props) => {
+    const handleChildKeyDown = (ev) => {
+      console.log(ev)
+    }
+    return <div onKeyDown={handleChildKeyDown}/>
+  }
   return (
     <div className="single-line">
       <h3>Single line input</h3>
@@ -19,6 +26,7 @@ function SingleLine(props) {
         isAccordion
         value={value}
         onChange={onChange}
+        renderSuggestionOverlay={renderSuggestionOverlay}
         style={defaultStyle}
         placeholder={"Mention people using '@'"}
       >

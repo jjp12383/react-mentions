@@ -9,14 +9,24 @@ import SuggestionChildren from './SuggestionChildren'
 
 class Suggestion extends Component {
   static propTypes = {
+    childFocusIndex: PropTypes.number,
     childMouseEnter: PropTypes.func,
     childSelect: PropTypes.func,
+    focused: PropTypes.bool,
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    query: PropTypes.string.isRequired,
-    index: PropTypes.number.isRequired,
     ignoreAccents: PropTypes.bool,
+    index: PropTypes.number.isRequired,
     isReplace: PropTypes.any,
-
+    open: PropTypes.bool,
+    query: PropTypes.string.isRequired,
+    renderSuggestion: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.bool,
+    ]),
+    renderSuggestionChildren: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.bool,
+    ]),
     suggestion: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({
@@ -25,19 +35,18 @@ class Suggestion extends Component {
         display: PropTypes.string,
       }),
     ]).isRequired,
-    renderSuggestion: PropTypes.func,
-    renderSuggestionChildren: PropTypes.func,
-
-    focused: PropTypes.bool,
-    open: PropTypes.bool,
-    childFocusIndex: PropTypes.number,
   }
 
   static defaultProps = {
-    childClicked: () => null,
+    childFocusIndex: null,
     childMouseEnter: () => null,
     childSelect: () => null,
+    focused: false,
+    ignoreAccents: false,
+    isReplace: null,
     open: false,
+    renderSuggestion: false,
+    renderSuggestionChildren: false,
   }
 
   render() {
