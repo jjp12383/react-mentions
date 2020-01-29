@@ -8,34 +8,41 @@ import LoadingIndicator from './LoadingIndicator'
 
 class SuggestionsOverlay extends Component {
   static propTypes = {
-    suggestions: PropTypes.object.isRequired,
-    focusIndex: PropTypes.number,
     childFocusIndex: PropTypes.number,
-    scrollFocusedIntoView: PropTypes.bool,
-    isLoading: PropTypes.bool,
-    onMouseDown: PropTypes.func,
-    onChildMouseEnter: PropTypes.func,
-    onMouseEnter: PropTypes.func,
-    onSelect: PropTypes.func,
-    onChildSelect: PropTypes.func,
-    openIndex: PropTypes.number,
-    ignoreAccents: PropTypes.bool,
-
     children: PropTypes.oneOfType([
       PropTypes.element,
       PropTypes.arrayOf(PropTypes.element),
     ]).isRequired,
+    focusIndex: PropTypes.number,
+    ignoreAccents: PropTypes.bool,
+    isLoading: PropTypes.bool,
+    onChildMouseEnter: PropTypes.func,
+    onChildSelect: PropTypes.func,
+    onMouseDown: PropTypes.func,
+    onMouseEnter: PropTypes.func,
+    onSelect: PropTypes.func,
+    openIndex: PropTypes.number,
+    renderSuggestionOverlay: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.bool,
+    ]),
+    scrollFocusedIntoView: PropTypes.bool,
+    suggestions: PropTypes.object.isRequired,
   }
 
   static defaultProps = {
-    suggestions: {},
+    childFocusIndex: null,
+    focusIndex: 0,
+    ignoreAccents: false,
+    isLoading: false,
+    onChildMouseEnter: () => null,
+    onChildSelect: () => null,
     onMouseDown: () => null,
     onMouseEnter: () => null,
-    onChildMouseEnter: () => null,
     onSelect: () => null,
-    onChildSelect: () => null,
     openIndex: null,
-    childFocusIndex: null,
+    renderSuggestionOverlay: false,
+    scrollFocusedIntoView: false,
   }
 
   componentDidUpdate() {
@@ -63,24 +70,30 @@ class SuggestionsOverlay extends Component {
   }
 
   render() {
-    const { suggestions, isLoading, style, onMouseDown } = this.props
+    const { isLoading, onMouseDown, renderSuggestionOverlay, style, suggestions } = this.props
+    let content = (
+      <ul
+        ref={el => {
+          this.suggestionsRef = el
+        }}
+        {...style('list')}
+      >
+        {this.renderSuggestions()}
+      </ul>
+    )
 
     // do not show suggestions until there is some data
     if (countSuggestions(suggestions) === 0 && !isLoading) {
       return null
     }
 
+    if (renderSuggestionOverlay) {
+      content = renderSuggestionOverlay({...this.props})
+    }
+
     return (
       <div {...style} onMouseDown={onMouseDown}>
-        <ul
-          ref={el => {
-            this.suggestionsRef = el
-          }}
-          {...style('list')}
-        >
-          {this.renderSuggestions()}
-        </ul>
-
+        {content}
         {this.renderLoadingIndicator()}
       </div>
     )

@@ -75,9 +75,11 @@ const propTypes = {
   isAccordion: PropTypes.bool,
   highlightToTag: PropTypes.bool,
   preserveValue: PropTypes.bool,
+  focused: PropTypes.bool,
   tagExisting: PropTypes.bool,
   singleLine: PropTypes.bool,
   allowSpaceInQuery: PropTypes.bool,
+  sendSuggestions: PropTypes.func,
   EXPERIMENTAL_cutCopyPaste: PropTypes.bool,
   allowSuggestionsAboveCursor: PropTypes.bool,
   ignoreAccents: PropTypes.bool,
@@ -116,7 +118,9 @@ class MentionsInput extends React.Component {
     ignoreAccents: false,
     isAccordion: false,
     highlightToTag: false,
+    focused: null,
     preserveValue: false,
+    sendSuggestions: () => null,
     tagExisting: false,
     singleLine: false,
     allowSuggestionsAboveCursor: false,
@@ -149,6 +153,7 @@ class MentionsInput extends React.Component {
       selectionEnd: null,
       language: lang,
       suggestions: {},
+      stateData: {},
       caretPosition: null,
       suggestionsPosition: null,
     }
@@ -158,12 +163,30 @@ class MentionsInput extends React.Component {
     const { children, EXPERIMENTAL_cutCopyPaste, value } = this.props
     const config = readConfigFromChildren(children)
     const newPlainTextValue = getPlainText(value, config)
+    React.Children.forEach(children, (child, childIndex) => {
+      if (!child) {
+        return
+      }
+      function flattenSuggestions(items, obj) {
+        let newObj = {...obj}
+        for (let i=0; i<items.length; i++) {
+          newObj[items[i].id] = items[i]
+          if (items[i].data) {
+            newObj = {...newObj, ...flattenSuggestions(items[i].data, newObj)}
+          }
+        }
+        return newObj
+      }
+      this.setState({
+        stateData: flattenSuggestions(child.props.data, {})
+      })
+    })
     const eventMock = { target: { value: value } }
     this.executeOnChange(
       eventMock,
       value,
       newPlainTextValue,
-      getMentions(value, config)
+      getMentions(value, config, this.state.stateData)
     )
 
     if (EXPERIMENTAL_cutCopyPaste) {
@@ -188,6 +211,27 @@ class MentionsInput extends React.Component {
       this.setState({ setSelectionAfterMentionChange: false })
       this.setSelection(this.state.selectionStart, this.state.selectionEnd)
     }
+    React.Children.forEach(this.props.children, (child, childIndex) => {
+      if (!child) {
+        return
+      }
+      function flattenSuggestions(items, obj) {
+        let newObj = {...obj}
+        for (let i=0; i<items.length; i++) {
+          newObj[items[i].id] = items[i]
+          if (items[i].data) {
+            newObj = {...newObj, ...flattenSuggestions(items[i].data, newObj)}
+          }
+        }
+        return newObj
+      }
+      const newSuggestions = flattenSuggestions(child.props.data, {})
+      if (!isEqual(newSuggestions, this.state.stateData)) {
+        this.setState({
+          stateData: flattenSuggestions(child.props.data, {})
+        })
+      }
+    })
   }
 
   componentWillUnmount() {
@@ -291,11 +335,10 @@ class MentionsInput extends React.Component {
   }
 
   renderSuggestionsOverlay = () => {
-    if (!isNumber(this.state.selectionStart)) {
+    if (!isNumber(this.state.selectionStart) || this.props.focus === false) {
       // do not show suggestions when the input does not have the focus
       return null
     }
-
     const suggestionsNode = (
       <SuggestionsOverlay
         style={this.props.style('suggestions')}
@@ -303,6 +346,7 @@ class MentionsInput extends React.Component {
         focusIndex={this.state.focusIndex}
         childFocusIndex={this.state.childFocusIndex}
         openIndex={this.state.openIndex}
+        renderSuggestionOverlay={this.props.renderSuggestionOverlay}
         scrollFocusedIntoView={this.state.scrollFocusedIntoView}
         ref={el => {
           this.suggestionsRef = el
@@ -324,6 +368,7 @@ class MentionsInput extends React.Component {
         {this.props.children}
       </SuggestionsOverlay>
     )
+    this.props.sendSuggestions(this.state.suggestions)
     if (this.props.suggestionsPortalHost) {
       return ReactDOM.createPortal(
         suggestionsNode,
@@ -416,7 +461,7 @@ class MentionsInput extends React.Component {
       eventMock,
       newValue,
       newPlainTextValue,
-      getMentions(newValue, config)
+      getMentions(newValue, config, this.state.stateData)
     )
   }
 
@@ -494,7 +539,7 @@ class MentionsInput extends React.Component {
       eventMock,
       newValue,
       newPlainTextValue,
-      getMentions(value, config)
+      getMentions(value, config, this.state.stateData)
     )
   }
 
@@ -564,7 +609,7 @@ class MentionsInput extends React.Component {
       setSelectionAfterMentionChange: setSelectionAfterMentionChange,
     })
 
-    let mentions = getMentions(newValue, config)
+    let mentions = getMentions(newValue, config, this.state.stateData)
 
     // Propagate change
     // let handleChange = this.getOnChange(this.props) || emptyFunction;
@@ -603,7 +648,7 @@ class MentionsInput extends React.Component {
     const suggestionsCount = countSuggestions(this.state.suggestions)
 
     const suggestionsComp = this.suggestionsRef
-    if (suggestionsCount === 0 || !suggestionsComp) {
+    if (suggestionsCount === 0 || !suggestionsComp || this.props.renderSuggestionOverlay) {
       this.props.onKeyDown(ev)
       return
     }
@@ -986,7 +1031,8 @@ class MentionsInput extends React.Component {
     // Extract substring in between the end of the previous mention and the caret
     const substringStartIndex = getEndOfLastMention(
       value.substring(0, positionInValue),
-      config
+      config,
+      this.state.stateData
     )
     const substring = plainTextValue.substring(
       substringStartIndex,
@@ -1074,6 +1120,7 @@ class MentionsInput extends React.Component {
     results,
     isReplace,
   ) => {
+
     // neglect async results from previous queries
     if (queryId !== this._queryId) return
 
@@ -1194,7 +1241,7 @@ class MentionsInput extends React.Component {
 
     // Propagate change
     const eventMock = { target: { value: newValue } }
-    const mentions = getMentions(newValue, config)
+    const mentions = getMentions(newValue, config, this.state.stateData)
     if (isReplace) {
       start = isReplace.start
       end = isReplace.end

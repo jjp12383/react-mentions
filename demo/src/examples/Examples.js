@@ -56,7 +56,8 @@ const nestedData = [
     data: [
       {
         id: '1',
-        display: 'undefined 1'
+        display: 'undefined 1',
+        meta: 'meta'
       },
       {
         id: '2',
