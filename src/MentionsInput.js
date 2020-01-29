@@ -322,14 +322,10 @@ class MentionsInput extends React.Component {
     }
   }
 
-  handleSuggestionSelect = (suggestion, queryInfo, isReplace, index) => {
-    if (this.props.isAccordion && this.state.openIndex !== index) {
-      this.openFocused(index)
-    } else if (this.props.isAccordion && this.state.openIndex === index) {
-      this.setState({
-        openIndex: null
-      })
-    } else if (!this.props.isAccordion) {
+  handleSuggestionSelect = (suggestion, queryInfo, isReplace) => {
+    if (this.props.isAccordion && this.state.openIndex === null) {
+      this.openFocused(this.state.focusIndex)
+    } else {
       this.addMention(suggestion, queryInfo, isReplace)
     }
   }
