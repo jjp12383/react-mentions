@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 
 import { Mention, MentionsInput } from '../../../src'
 
@@ -8,37 +9,36 @@ import defaultMentionStyle from './defaultMentionStyle'
 
 function SingleLine(props) {
   const { value, data, onChange, onAdd } = props
-
-  const renderSuggestionOverlay = (props) => {
-    const handleChildKeyDown = (ev) => {
-      console.log(ev)
-    }
-    return <div onKeyDown={handleChildKeyDown}/>
+  const [focused, setFocused] = useState(false)
+  const handleClickAway = () => {
+    setFocused(false)
   }
   return (
-    <div className="single-line">
-      <h3>Single line input</h3>
+    <ClickAwayListener onClickAway={handleClickAway}>
+      <div className="single-line">
+        <h3>Single line input</h3>
 
-      <MentionsInput
-        className="dialog"
-        highlightToTag
-        preserveValue
-        isAccordion
-        value={value}
-        onChange={onChange}
-        renderSuggestionOverlay={renderSuggestionOverlay}
-        style={defaultStyle}
-        placeholder={"Mention people using '@'"}
-      >
-        <Mention
-          trigger="["
-          displayTransform={(_, display) => display}
-          markup='[__display__|__id__]'
-          data={data}
-          onAdd={onAdd}
-          style={defaultMentionStyle} />
-      </MentionsInput>
-    </div>
+        <MentionsInput
+          className="dialog"
+          focused={focused}
+          highlightToTag
+          preserveValue
+          isAccordion
+          value={value}
+          onChange={onChange}
+          style={defaultStyle}
+          placeholder={"Mention people using '@'"}
+        >
+          <Mention
+            trigger="["
+            displayTransform={(_, display) => display}
+            markup='[__display__|__id__]'
+            data={data}
+            onAdd={onAdd}
+            style={defaultMentionStyle} />
+        </MentionsInput>
+      </div>
+    </ClickAwayListener>
   )
 }
 
