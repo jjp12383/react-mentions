@@ -680,6 +680,19 @@ class MentionsInput extends React.Component {
           return
         }
         if (this.state.openIndex !== null && this.state.childFocusIndex !== null) {
+          const { suggestions, openIndex, childFocusIndex } = this.state
+          const { result } = Object.values(suggestions).reduce(
+            (acc, { results, queryInfo, isReplace }) => [
+              ...acc,
+              ...results.map(result => ({ result, queryInfo, isReplace })),
+            ],
+            []
+          )[openIndex]
+
+          const childResult = result.data[childFocusIndex]
+          if (childResult.popover) {
+            return
+          }
           this.selectChildFocused()
           return
         }
@@ -1149,11 +1162,14 @@ class MentionsInput extends React.Component {
   }
 
   addMention = (
-    { id, display },
+    result,
     { childIndex, querySequenceStart, querySequenceEnd, plainTextValue },
     isReplace,
   ) => {
     // Insert mention in the marked up value at the correct position
+    const { stateData } = this.state
+    const newStateData = { ...stateData }
+    const { id, display } = result
     const value = this.props.value || ''
     const config = readConfigFromChildren(this.props.children)
     const mentionsChild = Children.toArray(this.props.children)[childIndex]
@@ -1227,17 +1243,18 @@ class MentionsInput extends React.Component {
     if (appendSpaceOnAdd) {
       displayValue += spaceCharacter
     }
-
+    newStateData[id] = result
     const newCaretPosition = isReplace ? isReplace.start + displayValue.length : querySequenceStart + displayValue.length
     this.setState({
       selectionStart: newCaretPosition,
       selectionEnd: newCaretPosition,
       setSelectionAfterMentionChange: true,
+      stateData: newStateData,
     })
 
     // Propagate change
     const eventMock = { target: { value: newValue } }
-    const mentions = getMentions(newValue, config, this.state.stateData)
+    const mentions = getMentions(newValue, config, newStateData)
     if (isReplace) {
       start = isReplace.start
       end = isReplace.end

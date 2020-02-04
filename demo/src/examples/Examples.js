@@ -51,12 +51,15 @@ const users = [
 
 const nestedData = [
   {
-    id: 'undefined',
+    id: 'und',
     display: 'undefined',
     data: [
       {
         id: '1',
         display: 'undefined 1',
+        popover: {
+          items: [1,2,3]
+        },
         meta: 'meta'
       },
       {
