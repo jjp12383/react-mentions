@@ -29,15 +29,8 @@ const mapPlainTextIndex = (
       }
     }
   }
-  let markupIteratee = (
-    markup,
-    index,
-    mentionPlainTextIndex,
-    id,
-    display,
-    childIndex,
-    lastMentionEndIndex
-  ) => {
+  let markupIteratee = (payload) => {
+    const { match, index, mentionPlainTextIndex, display, childIndex } = payload
     if (result !== undefined) return
 
     if (mentionPlainTextIndex + display.length > indexInPlainText) {
@@ -48,7 +41,7 @@ const mapPlainTextIndex = (
         result = null
       } else {
         result = {
-          index: index + (inMarkupCorrection === 'END' ? markup.length : 0),
+          index: index + (inMarkupCorrection === 'END' ? match.length : 0),
           childIndex,
         }
       }

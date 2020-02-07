@@ -127,19 +127,12 @@ class Highlighter extends Component {
       substringComponentKey++
     }
 
-    const mentionIteratee = (
-      markup,
-      index,
-      indexInPlainText,
-      id,
-      display,
-      mentionChildIndex,
-      lastMentionEndIndex
-    ) => {
+    const mentionIteratee = (payload) => {
+      const { id, display, childIndex, } = payload
       // generate a component key based on the id
       const key = _generateComponentKey(componentKeys, id)
       components.push(
-        this.getMentionComponentForMatch(id, display, mentionChildIndex, key)
+        this.getMentionComponentForMatch(id, display, childIndex, key)
       )
     }
 

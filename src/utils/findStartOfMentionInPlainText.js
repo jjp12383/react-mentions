@@ -7,16 +7,8 @@ const findStartOfMentionInPlainText = (value, config, indexInPlainText) => {
   let result = indexInPlainText
   let foundMention = false
 
-  let markupIteratee = (
-    markup,
-    index,
-    mentionPlainTextIndex,
-    id,
-    display,
-    childIndex,
-    lastMentionEndIndex,
-    plainDisplay
-  ) => {
+  let markupIteratee = (payload) => {
+    const { mentionPlainTextIndex, display, plainDisplay, metaData } = payload
     if (
       mentionPlainTextIndex <= indexInPlainText &&
       mentionPlainTextIndex + display.length > indexInPlainText
@@ -26,6 +18,7 @@ const findStartOfMentionInPlainText = (value, config, indexInPlainText) => {
         end: mentionPlainTextIndex + display.length,
         display,
         plainDisplay,
+        metaData,
       }
       foundMention = true
     }

@@ -111,6 +111,24 @@ const propTypes = {
   ]).isRequired,
 }
 
+function flattenSuggestions(items, obj, append) {
+  let newObj = { ...obj }
+  for (let i=0; i<items.length; i++) {
+    if (append) {
+      newObj[append + '_' + items[i].id] = items[i]
+    } else {
+      newObj[items[i].id] = items[i]
+    }
+    if (items[i].data) {
+      newObj = {...newObj, ...flattenSuggestions(items[i].data, newObj)}
+    }
+    if (items[i].popover && items[i].popover.items) {
+      newObj = {...newObj, ...flattenSuggestions(items[i].popover.items, newObj, items[i].id)}
+    }
+  }
+  return newObj
+}
+
 class MentionsInput extends React.Component {
   static propTypes = propTypes
 
@@ -167,16 +185,6 @@ class MentionsInput extends React.Component {
       if (!child) {
         return
       }
-      function flattenSuggestions(items, obj) {
-        let newObj = {...obj}
-        for (let i=0; i<items.length; i++) {
-          newObj[items[i].id] = items[i]
-          if (items[i].data) {
-            newObj = {...newObj, ...flattenSuggestions(items[i].data, newObj)}
-          }
-        }
-        return newObj
-      }
       this.setState({
         stateData: flattenSuggestions(child.props.data, {})
       })
@@ -186,7 +194,7 @@ class MentionsInput extends React.Component {
       eventMock,
       value,
       newPlainTextValue,
-      getMentions(value, config, this.state.stateData)
+      getMentions(value, config)
     )
 
     if (EXPERIMENTAL_cutCopyPaste) {
@@ -214,16 +222,6 @@ class MentionsInput extends React.Component {
     React.Children.forEach(this.props.children, (child, childIndex) => {
       if (!child) {
         return
-      }
-      function flattenSuggestions(items, obj) {
-        let newObj = {...obj}
-        for (let i=0; i<items.length; i++) {
-          newObj[items[i].id] = items[i]
-          if (items[i].data) {
-            newObj = {...newObj, ...flattenSuggestions(items[i].data, newObj)}
-          }
-        }
-        return newObj
       }
       const newSuggestions = flattenSuggestions(child.props.data, {})
       if (!isEqual(newSuggestions, this.state.stateData)) {
@@ -457,7 +455,7 @@ class MentionsInput extends React.Component {
       eventMock,
       newValue,
       newPlainTextValue,
-      getMentions(newValue, config, this.state.stateData)
+      getMentions(newValue, config)
     )
   }
 
@@ -535,7 +533,7 @@ class MentionsInput extends React.Component {
       eventMock,
       newValue,
       newPlainTextValue,
-      getMentions(value, config, this.state.stateData)
+      getMentions(value, config)
     )
   }
 
@@ -605,7 +603,7 @@ class MentionsInput extends React.Component {
       setSelectionAfterMentionChange: setSelectionAfterMentionChange,
     })
 
-    let mentions = getMentions(newValue, config, this.state.stateData)
+    let mentions = getMentions(newValue, config)
 
     // Propagate change
     // let handleChange = this.getOnChange(this.props) || emptyFunction;
@@ -1040,8 +1038,7 @@ class MentionsInput extends React.Component {
     // Extract substring in between the end of the previous mention and the caret
     const substringStartIndex = getEndOfLastMention(
       value.substring(0, positionInValue),
-      config,
-      this.state.stateData
+      config
     )
     const substring = plainTextValue.substring(
       substringStartIndex,
@@ -1167,8 +1164,6 @@ class MentionsInput extends React.Component {
     isReplace,
   ) => {
     // Insert mention in the marked up value at the correct position
-    const { stateData } = this.state
-    const newStateData = { ...stateData }
     const { id, display } = result
     const value = this.props.value || ''
     const config = readConfigFromChildren(this.props.children)
@@ -1230,7 +1225,7 @@ class MentionsInput extends React.Component {
       start = start && !isUndefined(start.index) ? start.index : start
       end = start + querySequenceEnd - querySequenceStart
     }
-    let insert = makeMentionsMarkup(markup, id, word || display)
+    let insert = makeMentionsMarkup(markup, id, word || display, result.metaData || null)
     if (appendSpaceOnAdd) {
       insert += spaceCharacter
     }
@@ -1243,18 +1238,16 @@ class MentionsInput extends React.Component {
     if (appendSpaceOnAdd) {
       displayValue += spaceCharacter
     }
-    newStateData[id] = result
     const newCaretPosition = isReplace ? isReplace.start + displayValue.length : querySequenceStart + displayValue.length
     this.setState({
       selectionStart: newCaretPosition,
       selectionEnd: newCaretPosition,
       setSelectionAfterMentionChange: true,
-      stateData: newStateData,
     })
 
     // Propagate change
     const eventMock = { target: { value: newValue } }
-    const mentions = getMentions(newValue, config, newStateData)
+    const mentions = getMentions(newValue, config)
     if (isReplace) {
       start = isReplace.start
       end = isReplace.end

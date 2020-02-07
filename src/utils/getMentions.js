@@ -1,18 +1,19 @@
 import iterateMentionsMarkup from './iterateMentionsMarkup'
 
-const getMentions = (value, config, stateData) => {
+const getMentions = (value, config) => {
   const mentions = []
   iterateMentionsMarkup(
     value,
     config,
-    (match, index, plainTextIndex, id, display, childIndex) => {
+    (payload) => {
+      const { index, mentionPlainTextIndex, id, display, childIndex, metaData } = payload
       mentions.push({
         id: id,
         display: display,
         childIndex: childIndex,
         index: index,
-        plainTextIndex: plainTextIndex,
-        metaData: stateData[id],
+        plainTextIndex: mentionPlainTextIndex,
+        metaData,
       })
     }
   )

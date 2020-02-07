@@ -5,7 +5,8 @@ const getPlainText = (value, config) => {
   iterateMentionsMarkup(
     value,
     config,
-    (match, index, plainTextIndex, id, display) => {
+    (payload) => {
+      const { display } = payload
       result += display
     },
     plainText => {

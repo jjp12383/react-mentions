@@ -1,6 +1,7 @@
 import findPositionOfCapturingGroup from './findPositionOfCapturingGroup'
 import combineRegExps from './combineRegExps'
 import countPlaceholders from './countPlaceholders'
+import PLACEHOLDERS from './placeholders'
 
 const emptyFn = () => {}
 
@@ -28,6 +29,9 @@ const iterateMentionsMarkup = (
 
   // detect all mention markup occurrences in the value and iterate the matches
   while ((match = regex.exec(value)) !== null) {
+    let metaDataPos
+    let metaData
+    const metaObj = {}
     const offset = captureGroupOffsets.find(o => !!match[o]) // eslint-disable-line no-loop-func
     const mentionChildIndex = captureGroupOffsets.indexOf(offset)
     const { markup, displayTransform } = config[mentionChildIndex]
@@ -35,20 +39,32 @@ const iterateMentionsMarkup = (
     const displayPos = offset + findPositionOfCapturingGroup(markup, 'display')
     const id = match[idPos]
     const display = displayTransform(id, match[displayPos])
-
+    if (markup.indexOf('metaData') > -1) {
+      metaDataPos = offset + findPositionOfCapturingGroup(markup,'metaData')
+      metaData = match[metaDataPos]
+      metaData = metaData.split(';')
+      for (let i=0; i<metaData.length; i+=1) {
+        const metaArray = metaData[i].split('=')
+        if (metaArray[0] !== PLACEHOLDERS.metaData) {
+          metaObj[metaArray[0]] = metaArray[1]
+        }
+      }
+    }
     let substr = value.substring(start, match.index)
     textIteratee(substr, start, currentPlainTextIndex, mentionChildIndex)
     currentPlainTextIndex += substr.length
-    markupIteratee(
-      match[0],
-      match.index,
-      currentPlainTextIndex,
+    const payload = {
+      match: match[0],
+      index: match.index,
+      mentionPlainTextIndex: currentPlainTextIndex,
       id,
       display,
-      mentionChildIndex,
-      start,
-      match[displayPos]
-    )
+      childIndex: mentionChildIndex,
+      lastMentionEndIndex: start,
+      plainDisplay: match[displayPos],
+      metaData: metaObj,
+    }
+    markupIteratee(payload)
     currentPlainTextIndex += display.length
     start = regex.lastIndex
   }

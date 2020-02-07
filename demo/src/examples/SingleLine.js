@@ -13,6 +13,9 @@ function SingleLine(props) {
   const handleClickAway = () => {
     setFocused(false)
   }
+  const displayTransform = (_, display) => {
+    return display
+  }
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <div className="single-line">
@@ -31,8 +34,8 @@ function SingleLine(props) {
         >
           <Mention
             trigger="["
-            displayTransform={(_, display) => display}
-            markup='[__display__|__id__]'
+            displayTransform={displayTransform}
+            markup='[__id__|__display__(__metaData__)]'
             data={data}
             onAdd={onAdd}
             style={defaultMentionStyle} />

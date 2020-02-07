@@ -58,9 +58,25 @@ const nestedData = [
         id: '1',
         display: 'undefined 1',
         popover: {
-          items: [1,2,3]
+          items: [{
+            id: 'literal',
+            key: 'literal',
+            label: '.literal',
+            metaData: {
+              type: 'CONCEPT_LITERAL',
+            },
+          },
+            {
+              id: 'value',
+              key: 'value',
+              label: '.value',
+              metaData: null,
+            }]
         },
-        meta: 'meta'
+        metaData: {
+          type: 'TYPE',
+          subType: 'SUB_TYPE',
+        },
       },
       {
         id: '2',
