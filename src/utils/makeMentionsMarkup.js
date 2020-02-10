@@ -9,7 +9,6 @@ const makeMentionsMarkup = (markup, id, display, metaData) => {
     })
     mUp = mUp.replace(PLACEHOLDERS.metaData, metaString)
   }
-
   return mUp
 }
 

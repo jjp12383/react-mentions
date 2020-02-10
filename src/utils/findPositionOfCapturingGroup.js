@@ -28,6 +28,7 @@ const findPositionOfCapturingGroup = (markup, parameterName) => {
     indexMetaData = null
   } else {
     indexArray.push(indexMetaData)
+    indexArray.push(indexMetaData + 0.1)
   }
 
   const sortedIndexArray = indexArray.sort((a, b) => {

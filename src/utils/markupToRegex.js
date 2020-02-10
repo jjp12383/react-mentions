@@ -3,6 +3,7 @@ import escapeRegex from './escapeRegex'
 
 const markupToRegex = markup => {
   let charAfterMetaData
+  let charBeforeMetaData
   let newRegex
   const escapedMarkup = escapeRegex(markup)
   const charAfterDisplay =
@@ -11,6 +12,7 @@ const markupToRegex = markup => {
     markup[markup.indexOf(PLACEHOLDERS.id) + PLACEHOLDERS.id.length]
   if (markup.indexOf(PLACEHOLDERS.metaData) > -1) {
     charAfterMetaData = markup[markup.indexOf(PLACEHOLDERS.metaData) + PLACEHOLDERS.metaData.length]
+    charBeforeMetaData = markup[markup.indexOf(PLACEHOLDERS.metaData) - 1]
     newRegex = new RegExp(
       escapedMarkup
         .replace(
@@ -18,7 +20,7 @@ const markupToRegex = markup => {
           `([^${escapeRegex(charAfterDisplay || '')}]+?)`
         )
         .replace(PLACEHOLDERS.id, `([^${escapeRegex(charAfterId || '')}]+?)`)
-        .replace(PLACEHOLDERS.metaData, `([^${escapeRegex(charAfterMetaData || '')}]+?)`)
+        .replace(escapeRegex(charBeforeMetaData) + PLACEHOLDERS.metaData + escapeRegex(charAfterMetaData), `(${escapeRegex(charBeforeMetaData)}([^${escapeRegex(charAfterMetaData || '')}]+?)${escapeRegex(charAfterMetaData)})*`)
     )
   } else {
     newRegex = new RegExp(

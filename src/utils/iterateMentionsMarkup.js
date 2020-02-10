@@ -26,7 +26,6 @@ const iterateMentionsMarkup = (
   let match
   let start = 0
   let currentPlainTextIndex = 0
-
   // detect all mention markup occurrences in the value and iterate the matches
   while ((match = regex.exec(value)) !== null) {
     let metaDataPos
@@ -40,15 +39,18 @@ const iterateMentionsMarkup = (
     const id = match[idPos]
     const display = displayTransform(id, match[displayPos])
     if (markup.indexOf('metaData') > -1) {
-      metaDataPos = offset + findPositionOfCapturingGroup(markup,'metaData')
+      metaDataPos = offset + findPositionOfCapturingGroup(markup,'metaData') + 1
       metaData = match[metaDataPos]
-      metaData = metaData.split(';')
-      for (let i=0; i<metaData.length; i+=1) {
-        const metaArray = metaData[i].split('=')
-        if (metaArray[0] !== PLACEHOLDERS.metaData) {
-          metaObj[metaArray[0]] = metaArray[1]
+      if (metaData) {
+        metaData = metaData.split(';')
+        for (let i=0; i<metaData.length; i+=1) {
+          const metaArray = metaData[i].split('=')
+          if (metaArray[0] !== PLACEHOLDERS.metaData) {
+            metaObj[metaArray[0]] = metaArray[1]
+          }
         }
       }
+
     }
     let substr = value.substring(start, match.index)
     textIteratee(substr, start, currentPlainTextIndex, mentionChildIndex)

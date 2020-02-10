@@ -35,7 +35,7 @@ function SingleLine(props) {
           <Mention
             trigger="["
             displayTransform={displayTransform}
-            markup='[__id__|__display__(__metaData__)]'
+            markup='[__display__(__metaData__)|__id__]'
             data={data}
             onAdd={onAdd}
             style={defaultMentionStyle} />
@@ -45,6 +45,6 @@ function SingleLine(props) {
   )
 }
 
-const asExample = provideExampleValue('')
+const asExample = provideExampleValue('This is a [test(type=TYPE;subType=SUBTYPE)|123]')
 
 export default asExample(SingleLine)

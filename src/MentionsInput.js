@@ -90,6 +90,7 @@ const propTypes = {
   onSelect: PropTypes.func,
   onBlur: PropTypes.func,
   onChange: PropTypes.func,
+  placeholder: PropTypes.string,
   readOnly: PropTypes.bool,
   suggestionsPortalHost:
     typeof Element === 'undefined'
@@ -111,24 +112,6 @@ const propTypes = {
   ]).isRequired,
 }
 
-function flattenSuggestions(items, obj, append) {
-  let newObj = { ...obj }
-  for (let i=0; i<items.length; i++) {
-    if (append) {
-      newObj[append + '_' + items[i].id] = items[i]
-    } else {
-      newObj[items[i].id] = items[i]
-    }
-    if (items[i].data) {
-      newObj = {...newObj, ...flattenSuggestions(items[i].data, newObj)}
-    }
-    if (items[i].popover && items[i].popover.items) {
-      newObj = {...newObj, ...flattenSuggestions(items[i].popover.items, newObj, items[i].id)}
-    }
-  }
-  return newObj
-}
-
 class MentionsInput extends React.Component {
   static propTypes = propTypes
 
@@ -137,6 +120,7 @@ class MentionsInput extends React.Component {
     isAccordion: false,
     highlightToTag: false,
     focused: null,
+    placeholder: '',
     preserveValue: false,
     sendSuggestions: () => null,
     tagExisting: false,
@@ -171,23 +155,19 @@ class MentionsInput extends React.Component {
       selectionEnd: null,
       language: lang,
       suggestions: {},
-      stateData: {},
+      statePlaceholder: '',
       caretPosition: null,
       suggestionsPosition: null,
     }
   }
 
   componentDidMount() {
-    const { children, EXPERIMENTAL_cutCopyPaste, value } = this.props
+    const { children, EXPERIMENTAL_cutCopyPaste, placeholder, value } = this.props
     const config = readConfigFromChildren(children)
     const newPlainTextValue = getPlainText(value, config)
-    React.Children.forEach(children, (child, childIndex) => {
-      if (!child) {
-        return
-      }
-      this.setState({
-        stateData: flattenSuggestions(child.props.data, {})
-      })
+    const placeholderPlainText = getPlainText(placeholder, config)
+    this.setState({
+      statePlaceholder: placeholderPlainText,
     })
     const eventMock = { target: { value: value } }
     this.executeOnChange(
@@ -209,6 +189,13 @@ class MentionsInput extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     // Update position of suggestions unless this componentDidUpdate was
     // triggered by an update to suggestionsPosition.
+    if (prevProps.placeholder !== this.props.placeholder) {
+      const config = readConfigFromChildren(this.props.children)
+      const placeholderPlainText = getPlainText(this.props.placeholder, config)
+      this.setState({
+        statePlaceholder: placeholderPlainText,
+      })
+    }
     if (prevState.suggestionsPosition === this.state.suggestionsPosition) {
       this.updateSuggestionsPosition()
     }
@@ -219,17 +206,6 @@ class MentionsInput extends React.Component {
       this.setState({ setSelectionAfterMentionChange: false })
       this.setSelection(this.state.selectionStart, this.state.selectionEnd)
     }
-    React.Children.forEach(this.props.children, (child, childIndex) => {
-      if (!child) {
-        return
-      }
-      const newSuggestions = flattenSuggestions(child.props.data, {})
-      if (!isEqual(newSuggestions, this.state.stateData)) {
-        this.setState({
-          stateData: flattenSuggestions(child.props.data, {})
-        })
-      }
-    })
   }
 
   componentWillUnmount() {
@@ -265,6 +241,7 @@ class MentionsInput extends React.Component {
       ...style('input'),
 
       value: this.getPlainText(),
+      placeholder: this.state.statePlaceholder,
 
       ...(!readOnly &&
         !disabled && {
